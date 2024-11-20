@@ -1,0 +1,120 @@
+﻿@model ST10393673_PROG6212_POE.Models.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    /* Apply card-like effect */
+    .card {
+        background-color: #fff;
+        border: none;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); /* Shadow effect */
+        border-radius: 10px; /* Rounded corners */
+        padding: 2rem;
+        max-width: 400px;
+        width: 100%;
+        margin: auto;
+        animation: fadeIn 1.5s ease-in-out; /* Animation effect */
+    }
+
+    /* Hover effect for buttons */
+    .btn-primary:hover {
+        background-color: #0056b3;
+        transition: background-color 0.3s ease; /* Hover transition */
+    }
+
+    /* Input field rounded corners and shadow */
+    .form-control {
+        border-radius: 10px;
+        border: 1px solid #0072ff;
+        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.2); /* Subtle shadow on fields */
+        transition: box-shadow 0.3s; /* Smooth transition on focus */
+    }
+
+    .form-control:focus {
+        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.5); /* Shadow grows on focus */
+        border-color: #0072ff;
+    }
+
+    /* Card hover effect */
+    .card:hover {
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+    }
+
+    /* Center form elements */
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* Full viewport height */
+    }
+
+    body, h1, label, .btn {
+        font-family: 'Poppins', sans-serif; /* Modern font */
+    }
+
+    /* Button styling */
+    .btn {
+        border-radius: 25px; /* Rounded button */
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Shadow for button */
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <h1 class="text-center">@ViewData["Title"]</h1>
+        <hr class="my-4">
+        <form asp-action="Register" method="post" class="d-flex flex-column align-items-center">
+            <div class="form-group w-100">
+                <label asp-for="FirstName"></label>
+                <input asp-for="FirstName" class="form-control" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <label asp-for="LastName"></label>
+                <input asp-for="LastName" class="form-control" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <label asp-for="JobTitle"></label>
+                <select asp-for="JobTitle" class="form-control">
+                    <option value="">Select a job title</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Programme Coordinator">Programme Coordinator</option>
+                    <option value="Academic Manager">Academic Manager</option>
+                </select>
+                <span asp-validation-for="JobTitle" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="form-control" type="password" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+            <div class="form-group w-100">
+                <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
+            </div>
+        </form>
+        <div class="text-center">
+            <a asp-action="Login">Already have an account? Login</a>
+        </div>
+    </div>
+</div>

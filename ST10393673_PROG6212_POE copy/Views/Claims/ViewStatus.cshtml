@@ -1,0 +1,78 @@
+﻿@model IEnumerable<ClaimViewModel>
+
+@{
+    ViewData["Title"] = "View Status";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    /* Apply card-like effect */
+    .card {
+        background-color: #fff;
+        border: none;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 2rem;
+        max-width: 800px; /* Increased width */
+        width: 100%;
+        margin: auto;
+        animation: fadeIn 1.5s ease-in-out;
+    }
+
+    /* Center form elements */
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    body, h1, label, .btn {
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <h1 class="text-center">@ViewData["Title"]</h1>
+        <hr class="my-4">
+        <form method="post" asp-action="ViewStatus">
+            <div class="form-group w-100">
+                <label for="ClaimId">Select Claim ID:</label>
+                <select id="ClaimId" name="ClaimId" class="form-control">
+                    <option value="">--Select Claim--</option>
+                    @foreach (var claim in Model)
+                    {
+                        <option value="@claim.ClaimId">@claim.ClaimId - @claim.Status</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group w-100">
+                <label for="Status">Select Status:</label>
+                <select id="Status" name="Status" class="form-control">
+                    <option value="">--Select Status--</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Declined">Declined</option>
+                </select>
+            </div>
+
+            <div class="form-group w-100">
+                <label for="SubmissionDate">Submission Date:</label>
+                <input type="date" id="SubmissionDate" name="SubmissionDate" class="form-control" />
+            </div>
+
+            <div class="form-group w-100">
+                <button type="submit" class="btn btn-primary">View Status</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,131 @@
+﻿@model IEnumerable<ST10393673_PROG6212_POE.Models.ClaimViewModel>
+
+@{
+    ViewData["Title"] = "Verify/Approve Claims";
+}
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+    /* Apply card-like effect */
+    .card {
+        background-color: #fff;
+        border: none;
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        padding: 3rem; /* Increased padding */
+        max-width: 1200px; /* Increased max-width */
+        width: 100%;
+        margin: auto;
+        animation: fadeIn 1.5s ease-in-out;
+    }
+
+    /* Center form elements */
+    body, html {
+        height: 100%;
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start; /* Align to the top */
+        padding-top: 20px; /* Added padding */
+    }
+
+    body, h1, label, .btn {
+        font-family: 'Poppins', sans-serif;
+    }
+
+    /* Table styling */
+    table {
+        width: 100%;
+        margin-top: 1rem; /* Add some space above the table */
+        border-collapse: collapse; /* Ensure borders are collapsed for better spacing */
+    }
+
+    th, td {
+        padding: 1rem; /* Increased padding for table cells */
+        text-align: left; /* Align text to the left */
+    }
+
+    th {
+        background-color: #f8f9fa; /* Light gray background for header */
+        border-bottom: 2px solid #dee2e6; /* Bottom border for header */
+    }
+
+    td {
+        border-bottom: 1px solid #dee2e6; /* Bottom border for table rows */
+    }
+</style>
+
+<div class="container">
+    <div class="card">
+        <h1 class="text-center">@ViewData["Title"]</h1>
+        <hr class="my-4">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Claim ID</th>
+                    <th>Lecturer Name</th>
+                    <th>Hours Worked</th>
+                    <th>Hourly Rate</th>
+                    <th>Submission Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model)
+                {
+                    <tr>
+                        <td>@claim.ClaimId</td>
+                        <td>@claim.LecturerName</td>
+                        <td>@claim.HoursWorked</td>
+                        <td>@claim.HourlyRate</td>
+                        <td>@claim.SubmissionDate.ToShortDateString()</td>
+                        <td>@claim.Status</td>
+                        <td>
+                            <form method="post" action="@Url.Action("UpdateStatus", "Claims")" class="update-status-form" data-claim-id="@claim.ClaimId">
+                                <input type="hidden" name="claimId" value="@claim.ClaimId" />
+                                <select name="newStatus" class="form-control status-select">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm mt-2">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('.update-status-form').on('submit', function (e) {
+                e.preventDefault();
+                var form = $(this);
+                var claimId = form.data('claim-id');
+                var newStatus = form.find('.status-select').val();
+
+                $.ajax({
+                    type: form.attr('method'),
+                    url: form.attr('action'),
+                    data: form.serialize(),
+                    success: function (response) {
+                        alert('Claim ID ' + claimId + ' status updated to ' + newStatus);
+                    },
+                    error: function (xhr, status, error) {
+                        alert('Error updating claim ID ' + claimId + ': ' + error);
+                    }
+                });
+            });
+        });
+    </script>
+}
