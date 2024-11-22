@@ -38,7 +38,7 @@
 
     /* Button colors */
     .btn-submit {
-        background-color: #28a745; /* Green */
+        background-color: #007bff; /* Blue */
         color: white;
     }
 
@@ -48,8 +48,8 @@
     }
 
     .btn-status {
-        background-color: #ffc107; /* Yellow */
-        color: black;
+        background-color: #007bff; /* Blue */
+        color: white;
     }
 </style>
 
@@ -60,7 +60,7 @@
         <p>Welcome to the Claims Management System! Please select an option below:</p>
         <div>
             <a class="btn btn-submit btn-lg" href="@Url.Action("SubmitClaim", "Claims")">Submit a Claim</a>
-            <a class="btn btn-verify btn-lg" href="@Url.Action("VerifyClaims", "Claims")">Verify/Approve Claims</a>
+            <a class="btn btn-verify btn-lg" href="@Url.Action("VerifyClaims", "Claims")">Verify / Approve Claims</a>
             <a class="btn btn-status btn-lg" href="@Url.Action("ViewStatus", "Claims")">View Claim Status</a>
         </div>
     </div>
