@@ -4,6 +4,7 @@
     ViewData["Title"] = "View Status";
 }
 
+<!-- External CSS -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
@@ -37,6 +38,22 @@
     body, h1, label, .btn {
         font-family: 'Poppins', sans-serif;
     }
+
+    /* Ensure responsive table */
+    .table {
+        width: 100%;
+        table-layout: fixed;
+    }
+
+        .table th, .table td {
+            text-align: center;
+            padding: 1rem;
+        }
+
+    /* Add some spacing between form elements */
+    .form-group {
+        margin-bottom: 1rem;
+    }
 </style>
 
 <div class="container">
@@ -46,7 +63,7 @@
 
         <!-- Filter Form -->
         <form method="get" asp-action="FilterClaims">
-            <div class="form-group w-100">
+            <div class="form-group">
                 <label for="ClaimId">Select Claim ID:</label>
                 <select id="ClaimId" name="ClaimId" class="form-control">
                     <option value="">--Select Claim--</option>
@@ -54,13 +71,13 @@
                     {
                         <option value="@claim.ClaimId"
                                 selected="@(ViewData["ClaimId"] != null && ViewData["ClaimId"].ToString() == claim.ClaimId.ToString() ? "selected" : "")">
-                            @claim.ClaimId - @claim.Status
+                            @claim.ClaimId
                         </option>
                     }
                 </select>
             </div>
 
-            <div class="form-group w-100">
+            <div class="form-group">
                 <label for="Status">Select Status:</label>
                 <select id="Status" name="Status" class="form-control">
                     <option value="">--Select Status--</option>
@@ -73,12 +90,12 @@
                 </select>
             </div>
 
-            <div class="form-group w-100">
+            <div class="form-group">
                 <label for="SubmissionDate">Submission Date:</label>
                 <input type="date" id="SubmissionDate" name="SubmissionDate" class="form-control" value="@ViewData["SubmissionDate"]" />
             </div>
 
-            <div class="form-group w-100">
+            <div class="form-group">
                 <button type="submit" class="btn btn-primary">Filter Claims</button>
                 <a href="@Url.Action("ResetClaimsFilter")" class="btn btn-secondary ml-2">Reset Filters</a>
             </div>
@@ -111,6 +128,10 @@
                             @if (!string.IsNullOrEmpty(claim.AttachmentUrl))
                             {
                                 <a href="@claim.AttachmentUrl" target="_blank">View Document</a>
+                            }
+                            else
+                            {
+                                <span>No Attachment</span>
                             }
                         </td>
                     </tr>
