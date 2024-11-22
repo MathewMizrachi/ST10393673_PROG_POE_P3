@@ -5,6 +5,7 @@ using ST10393673_PROG6212_POE.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace ST10393673_PROG6212_POE.Controllers
@@ -81,7 +82,55 @@ namespace ST10393673_PROG6212_POE.Controllers
         [HttpGet]
         public async Task<IActionResult> ViewStatus(string claimIdFilter, string statusFilter, DateTime? dateFilter)
         {
+            // Fetch claims with optional filters (ClaimId, Status, Date)
             var claims = await _claimService.GetClaimsAsync(claimIdFilter, statusFilter, dateFilter);
+            if (claims == null || !claims.Any()) // Fixed null or empty check
+            {
+                // Hardcoded fake claims if no real data is found
+                claims = new List<ClaimViewModel>
+                {
+                    new ClaimViewModel
+                    {
+                        ClaimId = 1,
+                        LecturerName = "John Doe",
+                        HoursWorked = 40,
+                        HourlyRate = 20,
+                        SubmissionDate = DateTime.Now.AddDays(-2),
+                        Status = "Pending",
+                        AttachmentUrl = "https://fakeurl.com/fakefile1"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 2,
+                        LecturerName = "Jane Smith",
+                        HoursWorked = 35,
+                        HourlyRate = 22,
+                        SubmissionDate = DateTime.Now.AddDays(-1),
+                        Status = "Approved",
+                        AttachmentUrl = "https://fakeurl.com/fakefile2"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 3,
+                        LecturerName = "Michael Scott",
+                        HoursWorked = 41,
+                        HourlyRate = 90,
+                        SubmissionDate = DateTime.Now.AddDays(-4),
+                        Status = "Declined",
+                        AttachmentUrl = "https://fakeurl.com/fakefile3"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 4,
+                        LecturerName = "Dean Williams",
+                        HoursWorked = 5,
+                        HourlyRate = 220,
+                        SubmissionDate = DateTime.Now.AddDays(-9),
+                        Status = "Pending",
+                        AttachmentUrl = "https://fakeurl.com/fakefile4"
+                    }
+                };
+            }
             return View(claims);
         }
 
@@ -90,6 +139,7 @@ namespace ST10393673_PROG6212_POE.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> FilterClaims(string claimId, string status, DateTime? submissionDate)
         {
+            // Call the service to get claims based on the filter criteria
             var claims = await _claimService.GetClaimsAsync(claimId, status, submissionDate);
             return View("ViewStatus", claims); // Return the ViewStatus view with filtered claims
         }
@@ -119,7 +169,55 @@ namespace ST10393673_PROG6212_POE.Controllers
         [HttpGet]
         public async Task<IActionResult> VerifyClaims()
         {
+            // Fetch claims, but if no data from the service, use fake claims
             var claims = await _claimService.GetClaimsAsync(null, null, null);
+            if (claims == null || !claims.Any()) // Fixed null or empty check
+            {
+                // Hardcoded fake claims if no real data is found
+                claims = new List<ClaimViewModel>
+                {
+                    new ClaimViewModel
+                    {
+                        ClaimId = 1,
+                        LecturerName = "John Doe",
+                        HoursWorked = 40,
+                        HourlyRate = 20,
+                        SubmissionDate = DateTime.Now.AddDays(-2),
+                        Status = "Pending",
+                        AttachmentUrl = "https://fakeurl.com/fakefile1"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 2,
+                        LecturerName = "Jane Smith",
+                        HoursWorked = 35,
+                        HourlyRate = 22,
+                        SubmissionDate = DateTime.Now.AddDays(-1),
+                        Status = "Approved",
+                        AttachmentUrl = "https://fakeurl.com/fakefile2"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 3,
+                        LecturerName = "Michael Scott",
+                        HoursWorked = 41,
+                        HourlyRate = 90,
+                        SubmissionDate = DateTime.Now.AddDays(-4),
+                        Status = "Declined",
+                        AttachmentUrl = "https://fakeurl.com/fakefile3"
+                    },
+                    new ClaimViewModel
+                    {
+                        ClaimId = 4,
+                        LecturerName = "Dean Williams",
+                        HoursWorked = 5,
+                        HourlyRate = 220,
+                        SubmissionDate = DateTime.Now.AddDays(-9),
+                        Status = "Pending",
+                        AttachmentUrl = "https://fakeurl.com/fakefile4"
+                    }
+                };
+            }
             return View(claims);
         }
     }
