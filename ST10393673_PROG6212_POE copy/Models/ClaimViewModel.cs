@@ -33,6 +33,8 @@ namespace ST10393673_PROG6212_POE.Models
         [Url]
         public string AttachmentUrl { get; set; }
 
+        public double TotalClaimAmount { get; set; }
+
         public string AdminComments { get; set; } // Optional comments added by admin
     }
 }

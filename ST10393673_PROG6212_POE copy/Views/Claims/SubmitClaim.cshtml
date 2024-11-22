@@ -4,6 +4,9 @@
     ViewData["Title"] = "Submit Claim";
 }
 
+<!-- Include jQuery for JavaScript to work -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
@@ -20,22 +23,28 @@
         margin: auto;
         animation: fadeIn 1.5s ease-in-out;
     }
-    
+
     /* Center form elements */
     body, html {
         height: 100%;
         margin: 0;
     }
-    
+
     .container {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
     }
-    
+
     body, h1, label, .btn {
         font-family: 'Poppins', sans-serif;
+    }
+
+    .total-claim {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-top: 15px;
     }
 </style>
 
@@ -46,12 +55,12 @@
         <form asp-action="SubmitClaim" method="post" enctype="multipart/form-data" onsubmit="return handleSubmit()" class="d-flex flex-column align-items-center">
             <div class="form-group w-100">
                 <label asp-for="HoursWorked"></label>
-                <input asp-for="HoursWorked" class="form-control" />
+                <input asp-for="HoursWorked" class="form-control" id="hoursWorked" oninput="calculateClaim()" />
                 <span asp-validation-for="HoursWorked" class="text-danger"></span>
             </div>
             <div class="form-group w-100">
                 <label asp-for="HourlyRate"></label>
-                <input asp-for="HourlyRate" class="form-control" />
+                <input asp-for="HourlyRate" class="form-control" id="hourlyRate" oninput="calculateClaim()" />
                 <span asp-validation-for="HourlyRate" class="text-danger"></span>
             </div>
             <div class="form-group w-100">
@@ -64,6 +73,12 @@
                 <input asp-for="SupportingDocuments" class="form-control-file" />
                 <span asp-validation-for="SupportingDocuments" class="text-danger"></span>
             </div>
+
+            <!-- Display the total claim amount in Rands -->
+            <div class="total-claim" id="totalClaimAmount">
+                Total Claim Amount: R 0.00
+            </div>
+
             <div class="form-group w-100">
                 <button type="submit" class="btn btn-primary btn-lg w-100">Submit</button>
             </div>
@@ -73,6 +88,20 @@
 
 @section Scripts {
     <script>
+        // Function to calculate the total claim amount in Rands
+        function calculateClaim() {
+            // Ensure the values are numeric and use 0 as fallback if empty
+            const hoursWorked = parseFloat($('#hoursWorked').val()) || 0;
+            const hourlyRate = parseFloat($('#hourlyRate').val()) || 0;
+
+            // Calculate the total claim
+            const totalClaim = hoursWorked * hourlyRate;
+
+            // Update the text in the total claim display
+            $('#totalClaimAmount').text('Total Claim Amount: R ' + totalClaim.toFixed(2));
+        }
+
+        // Placeholder for handling form submission (customize as needed)
         function handleSubmit() {
             alert('Claim Submitted');
             $('form')[0].reset();
