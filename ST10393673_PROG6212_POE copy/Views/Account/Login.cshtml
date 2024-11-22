@@ -8,45 +8,44 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-    /* Apply card-like effect */
     .card {
         background-color: #fff;
         border: none;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); /* Shadow effect */
-        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
         padding: 2rem;
         max-width: 400px;
         width: 100%;
         margin: auto;
-        animation: fadeIn 1.5s ease-in-out; /* Animation effect */
+        animation: fadeIn 1.5s ease-in-out;
     }
 
-
-    /* Hover effect for buttons */
-    .btn-primary:hover {
-        background-color: #0056b3;
-        transition: background-color 0.3s ease; /* Hover transition */
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
     }
 
-    /* Input field rounded corners and shadow */
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transition: background-color 0.3s ease;
+        }
+
     .form-control {
         border-radius: 10px;
         border: 1px solid #0072ff;
-        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.2); /* Subtle shadow on fields */
-        transition: box-shadow 0.3s; /* Smooth transition on focus */
+        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.2);
+        transition: box-shadow 0.3s ease;
     }
 
-    .form-control:focus {
-        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.5); /* Shadow grows on focus */
-        border-color: #0072ff;
-    }
+        .form-control:focus {
+            box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.5);
+            border-color: #0072ff;
+        }
 
-    /* Card hover effect */
     .card:hover {
-        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
     }
 
-    /* Center form elements */
     body, html {
         height: 100%;
         margin: 0;
@@ -56,19 +55,26 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh; /* Full viewport height */
+        height: 100vh;
+        background-color: #f8f9fa;
     }
 
     body, h1, label, .btn {
-        font-family: 'Poppins', sans-serif; /* Modern font */
+        font-family: 'Poppins', sans-serif;
     }
 
-    /* Button styling */
     .btn {
-        border-radius: 25px; /* Rounded button */
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Shadow for button */
+        border-radius: 25px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     }
 
+    .form-check {
+        margin-top: 10px;
+    }
+
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 5px;
     }
 </style>
 
@@ -76,22 +82,39 @@
     <div class="card">
         <h1 class="text-center">@ViewData["Title"]</h1>
         <hr class="my-4">
-        <form asp-action="Login" method="post" class="d-flex flex-column align-items-center">
-            <div class="form-group w-100">
-                <label asp-for="Email"></label>
-                <input asp-for="Email" class="form-control" />
+        <form asp-action="Login" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="Enter your email" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="Password"></label>
-                <input asp-for="Password" class="form-control" type="password" />
+            <div class="form-group mb-3">
+                <label asp-for="Password" class="form-label"></label>
+                <input asp-for="Password" class="form-control" type="password" placeholder="Enter your password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
+            <div class="form-group mb-3">
+                <label asp-for="JobTitle" class="form-label">Job Title</label>
+                <select asp-for="JobTitle" class="form-control">
+                    <option value="">Select a job title</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Programme Coordinator">Programme Coordinator</option>
+                    <option value="HR">HR</option>
+                </select>
+                <span asp-validation-for="JobTitle" class="text-danger"></span>
+            </div>
+            <div class="form-check mb-3">
+                <input asp-for="RememberMe" class="form-check-input" type="checkbox" id="rememberMe" />
+                <label for="rememberMe" class="form-check-label">
+                    Remember me
+                </label>
+                <span asp-validation-for="RememberMe" class="text-danger"></span>
+            </div>
+            <div class="form-group mb-3">
                 <button type="submit" class="btn btn-primary btn-lg w-100">Login</button>
             </div>
         </form>
-        <div class="text-center">
+        <div class="text-center mt-3">
             <a asp-action="Register">Don't have an account? Register</a>
         </div>
     </div>

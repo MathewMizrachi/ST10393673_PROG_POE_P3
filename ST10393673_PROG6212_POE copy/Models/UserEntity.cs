@@ -1,37 +1,39 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+﻿using Azure;
+using Azure.Data.Tables;
 using System;
 
 namespace ST10393673_PROG6212_POE.Models
 {
-    public class UserEntity : TableEntity
+    // Implements ITableEntity to represent a user entity for Azure Table Storage
+    public class UserEntity : ITableEntity
     {
-        public UserEntity(string email)
-        {
-            PartitionKey = "Users";
-            RowKey = email;
-        }
+        // Explicitly implement ITableEntity properties
+        public string PartitionKey { get; set; } // Groups the users together
+        public string RowKey { get; set; } // Unique identifier, email in this case
 
-        public UserEntity() { }
+        public DateTimeOffset? Timestamp { get; set; } // Auto-generated timestamp by Azure Table Storage
+        public ETag ETag { get; set; } // Auto-generated ETag for optimistic concurrency control
 
+        // Custom properties of the user entity
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string JobTitle { get; set; }
 
-        public string Email
+        // For security reasons, store the hashed password
+        public string PasswordHash { get; set; }
+
+        // Store the email separately for easy retrieval
+        public string Email { get; set; }
+
+        // Constructor to initialize the PartitionKey and RowKey
+        public UserEntity(string email)
         {
-            get { return RowKey; }
-            set { RowKey = value; }
+            // Initialize explicitly
+            PartitionKey = "Users"; // This groups the users together
+            RowKey = email; // Using email as the unique identifier (RowKey)
         }
 
-        public string PasswordHash { get; set; }
-        public DateTime RegisteredDate { get; set; }
-
-        public string Role { get; set; } = "User";
-        public bool IsActive { get; set; } = true;
-
-        // New fields
-        public DateTime LastLoginDate { get; set; }
-        public bool IsLockedOut { get; set; }
+        // Default constructor for TableEntity (needed for Azure Table Storage operations)
+        public UserEntity() { }
     }
-
 }

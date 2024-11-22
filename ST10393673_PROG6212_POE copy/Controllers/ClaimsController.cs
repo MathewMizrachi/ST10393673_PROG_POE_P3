@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using ST10393673_PROG6212_POE.Models;
 using ST10393673_PROG6212_POE.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -11,11 +13,15 @@ namespace ST10393673_PROG6212_POE.Controllers
     {
         private readonly IClaimService _claimService;
         private readonly BlobStorageService _blobStorageService;
+        private readonly ILogger<ClaimsController> _logger;
 
-        public ClaimsController(IClaimService claimService, BlobStorageService blobStorageService)
+        private readonly string _containerName = "claims-files"; // You can later load this from config if needed
+
+        public ClaimsController(IClaimService claimService, BlobStorageService blobStorageService, ILogger<ClaimsController> logger)
         {
             _claimService = claimService;
             _blobStorageService = blobStorageService;
+            _logger = logger;
         }
 
         // GET: Claims/SubmitClaim
@@ -32,26 +38,38 @@ namespace ST10393673_PROG6212_POE.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Upload file to Blob Storage
+                // Upload file to Blob Storage if documents exist
                 if (model.SupportingDocuments != null && model.SupportingDocuments.Length > 0)
                 {
-                    using (var stream = new MemoryStream())
+                    try
                     {
-                        await model.SupportingDocuments.CopyToAsync(stream);
-                        stream.Position = 0; // Reset stream position
-                        
-                        // Ensure the container name is set appropriately
-                        string containerName = "claims-files"; 
-                        // Upload to Blob Storage
-                        await _blobStorageService.UploadBlobAsync(containerName, model.SupportingDocuments.FileName, stream);
-                        
-                        // Store the file URL in the claim model
-                        model.AttachmentUrl = $"https://{_blobStorageService.AccountName}.blob.core.windows.net/{containerName}/{model.SupportingDocuments.FileName}";
+                        using (var stream = new MemoryStream())
+                        {
+                            await model.SupportingDocuments.CopyToAsync(stream);
+                            stream.Position = 0; // Reset stream position
+
+                            // Upload to Blob Storage
+                            _logger.LogInformation("Uploading file {FileName} to Blob Storage", model.SupportingDocuments.FileName);
+                            await _blobStorageService.UploadBlobAsync(_containerName, model.SupportingDocuments.FileName, stream);
+
+                            // Store the file URL in the claim model
+                            model.AttachmentUrl = $"https://{_blobStorageService.AccountName}.blob.core.windows.net/{_containerName}/{model.SupportingDocuments.FileName}";
+
+                            _logger.LogInformation("File uploaded successfully, URL: {FileUrl}", model.AttachmentUrl);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError("Error uploading file to Blob Storage: {ErrorMessage}", ex.Message);
+                        ModelState.AddModelError("", "Failed to upload supporting document.");
+                        return View(model); // Return view if upload fails
                     }
                 }
 
-                // Save the claim
+                // Submit the claim to the service
                 await _claimService.SubmitClaimAsync(model);
+
+                _logger.LogInformation("Claim submitted successfully for Claim ID: {ClaimId}", model.ClaimId);
                 return RedirectToAction("ViewStatus");
             }
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ST10393673_PROG6212_POE.Models
 {
@@ -25,9 +26,13 @@ namespace ST10393673_PROG6212_POE.Models
         [Required]
         public string Status { get; set; } = "Pending";
 
+        // Mark the IFormFile property as NotMapped
+        [NotMapped]
         public IFormFile SupportingDocuments { get; set; }
 
-        // Add AttachmentUrl property
+        [Url]
         public string AttachmentUrl { get; set; }
+
+        public string AdminComments { get; set; } // Optional comments added by admin
     }
 }

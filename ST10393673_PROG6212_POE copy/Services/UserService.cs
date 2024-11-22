@@ -1,62 +1,71 @@
-﻿using Microsoft.Azure.Cosmos.Table;
-using ST10393673_PROG6212_POE.Models;
+﻿using Azure.Data.Tables;
+using System;
 using System.Threading.Tasks;
 
 namespace ST10393673_PROG6212_POE.Services
 {
     public class UserService
     {
-        private readonly TableService _tableService;
-        private const string TableName = "Users";
+        private readonly string _connectionString;
+        private readonly TableServiceClient _tableServiceClient;
 
-        public UserService(TableService tableService)
+        public UserService(string connectionString)
         {
-            _tableService = tableService;
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _tableServiceClient = new TableServiceClient(_connectionString);
         }
 
-        // Method to register a new user
-        public async Task<bool> RegisterUser(UserEntity user)
+        // Retrieve or create a table
+        public async Task<TableClient> GetOrCreateTableAsync(string tableName)
         {
-            // Get or create the Users table
-            var table = await _tableService.GetOrCreateTableAsync(TableName);
-            // Insert or merge the user entity into the table
-            return await _tableService.InsertOrMergeEntityAsync(table, user);
+            var tableClient = _tableServiceClient.GetTableClient(tableName);
+            await tableClient.CreateIfNotExistsAsync();  // Ensure the table exists
+            return tableClient;
         }
 
-        // Method to retrieve a user by partition key and row key
-        public async Task<UserEntity> GetUser(string partitionKey, string rowKey)
+        // Insert or merge an entity in the table
+        public async Task<bool> InsertOrMergeEntityAsync<T>(TableClient tableClient, T entity) where T : class, ITableEntity
         {
-            // Get or create the Users table
-            var table = await _tableService.GetOrCreateTableAsync(TableName);
-            // Retrieve the user entity from the table
-            return await _tableService.RetrieveEntityAsync<UserEntity>(table, partitionKey, rowKey);
-        }
-
-        // Method to update user details
-        public async Task<bool> UpdateUser(UserEntity user)
-        {
-            // Get or create the Users table
-            var table = await _tableService.GetOrCreateTableAsync(TableName);
-            // Insert or merge the user entity into the table (this serves as an update if the entity exists)
-            return await _tableService.InsertOrMergeEntityAsync(table, user);
-        }
-
-        // Method to delete a user
-        public async Task<bool> DeleteUser(string partitionKey, string rowKey)
-        {
-            // Get or create the Users table
-            var table = await _tableService.GetOrCreateTableAsync(TableName);
-            // Retrieve the user entity from the table
-            var user = await _tableService.RetrieveEntityAsync<UserEntity>(table, partitionKey, rowKey);
-
-            // If the user exists, delete it
-            if (user != null)
+            try
             {
-                return await _tableService.DeleteEntityAsync(table, user);
+                await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Merge);
+                return true;
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting or merging entity: {ex.Message}");
+                return false;
+            }
+        }
 
-            // Return false if the user was not found
-            return false;
+        // Retrieve an entity from the table
+        public async Task<T> RetrieveEntityAsync<T>(TableClient tableClient, string partitionKey, string rowKey) where T : class, ITableEntity
+        {
+            try
+            {
+                var entity = await tableClient.GetEntityAsync<T>(partitionKey, rowKey);
+                return entity.Value;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error retrieving entity: {ex.Message}");
+                return null;
+            }
+        }
+
+        // Delete an entity from the table
+        public async Task<bool> DeleteEntityAsync<T>(TableClient tableClient, T entity) where T : class, ITableEntity
+        {
+            try
+            {
+                await tableClient.DeleteEntityAsync(entity.PartitionKey, entity.RowKey);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting entity: {ex.Message}");
+                return false;
+            }
         }
     }
 }

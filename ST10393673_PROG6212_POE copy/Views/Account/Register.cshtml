@@ -4,48 +4,49 @@
     ViewData["Title"] = "Register";
 }
 
+<!-- External CSS links -->
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
 <style>
-    /* Apply card-like effect */
+    /* Card styles */
     .card {
         background-color: #fff;
         border: none;
-        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); /* Shadow effect */
-        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
         padding: 2rem;
         max-width: 400px;
         width: 100%;
         margin: auto;
-        animation: fadeIn 1.5s ease-in-out; /* Animation effect */
+        animation: fadeIn 1.5s ease-in-out;
     }
 
-    /* Hover effect for buttons */
+    /* Button hover effect */
     .btn-primary:hover {
         background-color: #0056b3;
-        transition: background-color 0.3s ease; /* Hover transition */
+        transition: background-color 0.3s ease;
     }
 
-    /* Input field rounded corners and shadow */
+    /* Input fields styles */
     .form-control {
         border-radius: 10px;
         border: 1px solid #0072ff;
-        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.2); /* Subtle shadow on fields */
-        transition: box-shadow 0.3s; /* Smooth transition on focus */
+        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.2);
+        transition: box-shadow 0.3s;
     }
 
-    .form-control:focus {
-        box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.5); /* Shadow grows on focus */
-        border-color: #0072ff;
-    }
+        .form-control:focus {
+            box-shadow: 0px 0px 5px rgba(0, 114, 255, 0.5);
+            border-color: #0072ff;
+        }
 
     /* Card hover effect */
     .card:hover {
-        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow on hover */
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
     }
 
-    /* Center form elements */
+    /* Full-height container */
     body, html {
         height: 100%;
         margin: 0;
@@ -55,17 +56,27 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh; /* Full viewport height */
+        height: 100vh;
     }
 
+    /* Font and button styles */
     body, h1, label, .btn {
-        font-family: 'Poppins', sans-serif; /* Modern font */
+        font-family: 'Poppins', sans-serif;
     }
 
-    /* Button styling */
     .btn {
-        border-radius: 25px; /* Rounded button */
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Shadow for button */
+        border-radius: 25px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Alert message styles */
+    .alert {
+        margin-top: 20px;
+    }
+
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 5px;
     }
 </style>
 
@@ -73,48 +84,84 @@
     <div class="card">
         <h1 class="text-center">@ViewData["Title"]</h1>
         <hr class="my-4">
-        <form asp-action="Register" method="post" class="d-flex flex-column align-items-center">
-            <div class="form-group w-100">
-                <label asp-for="FirstName"></label>
+
+        <!-- Show Success/Failure Messages -->
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success">@TempData["Message"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">@TempData["Error"]</div>
+        }
+
+        <form asp-action="Register" method="post">
+            <!-- First Name Field -->
+            <div class="form-group">
+                <label asp-for="FirstName" class="form-label">First Name</label>
                 <input asp-for="FirstName" class="form-control" />
                 <span asp-validation-for="FirstName" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="LastName"></label>
+
+            <!-- Last Name Field -->
+            <div class="form-group">
+                <label asp-for="LastName" class="form-label">Last Name</label>
                 <input asp-for="LastName" class="form-control" />
                 <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="JobTitle"></label>
-                <select asp-for="JobTitle" class="form-control">
+
+            <!-- Job Title Dropdown -->
+            <div class="form-group">
+                <label asp-for="SelectedJobTitle" class="form-label">Job Title</label>
+                <select asp-for="SelectedJobTitle" asp-items="@(new SelectList(Enum.GetValues(typeof(ST10393673_PROG6212_POE.Models.JobTitle))
+                    .Cast<ST10393673_PROG6212_POE.Models.JobTitle>()
+                    .Select(jt => new
+                    {
+                        Value = jt,
+                        Text = jt.ToString() // Will use the Display Name in the model (you may need further logic here to fetch DisplayAttribute)
+                    }), "Value", "Text"))" class="form-control">
                     <option value="">Select a job title</option>
-                    <option value="Lecturer">Lecturer</option>
-                    <option value="Programme Coordinator">Programme Coordinator</option>
-                    <option value="Academic Manager">Academic Manager</option>
                 </select>
-                <span asp-validation-for="JobTitle" class="text-danger"></span>
+                <span asp-validation-for="SelectedJobTitle" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="Email"></label>
+
+            <!-- Email Field -->
+            <div class="form-group">
+                <label asp-for="Email" class="form-label">Email</label>
                 <input asp-for="Email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="Password"></label>
+
+            <!-- Password Field -->
+            <div class="form-group">
+                <label asp-for="Password" class="form-label">Password</label>
                 <input asp-for="Password" class="form-control" type="password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
-                <label asp-for="ConfirmPassword"></label>
+
+            <!-- Confirm Password Field -->
+            <div class="form-group">
+                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
                 <input asp-for="ConfirmPassword" class="form-control" type="password" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
-            <div class="form-group w-100">
+
+            <!-- Submit Button -->
+            <div class="form-group">
                 <button type="submit" class="btn btn-primary btn-lg w-100">Register</button>
             </div>
         </form>
+
+        <!-- Login Link -->
         <div class="text-center">
             <a asp-action="Login">Already have an account? Login</a>
         </div>
     </div>
 </div>
+
+<!-- Validation Scripts -->
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

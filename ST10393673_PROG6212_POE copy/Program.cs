@@ -1,12 +1,10 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;  // Add this to include logging
 using ST10393673_PROG6212_POE.Models;
 using ST10393673_PROG6212_POE.Services;
-using Microsoft.Azure.Cosmos.Table;
 
 namespace ST10393673_PROG6212_POE
 {
@@ -19,64 +17,64 @@ namespace ST10393673_PROG6212_POE
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
-            // Configure the database context for Identity
+            // Register IClaimService and ClaimService
+            builder.Services.AddScoped<IClaimService, ClaimService>();
+
+            // Configure Entity Framework Core and ApplicationDbContext for SQL Server
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // Configure Identity services
-            builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddDefaultTokenProviders();
-
-            // Add ClaimService for managing claims
-            builder.Services.AddScoped<IClaimService, ClaimService>();
-
-            // Add BlobStorageService with connection string from appsettings.json
-            builder.Services.AddSingleton<BlobStorageService>(provider =>
+            // Configure ASP.NET Core Identity with custom password options
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
-                var configuration = provider.GetRequiredService<IConfiguration>();
-                var connectionString = configuration["AzureBlobStorage:ConnectionString"];
-                return new BlobStorageService(connectionString);
-            });
+                options.Password.RequireDigit = true;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+            })
+                .AddEntityFrameworkStores<ApplicationDbContext>() // Store Identity in ApplicationDbContext
+                .AddDefaultTokenProviders(); // Add token providers for password reset, etc.
 
-            // Add TableService to manage Azure Table Storage
+            // Register TableService for Azure Table Storage using the updated connection string
             builder.Services.AddSingleton<TableService>(provider =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
-                var connectionString = configuration["AzureTableStorage:ConnectionString"];
-                return new TableService(connectionString);
+                var logger = provider.GetRequiredService<ILogger<TableService>>(); // Get the logger from DI container
+                var connectionString = configuration.GetConnectionString("AzureStorageConnection"); // Fetch connection string from appsettings.json under ConnectionStrings
+                return new TableService(connectionString, logger); // Pass logger to the TableService constructor
             });
 
-            // Add UserService for user-related table storage operations
-            builder.Services.AddScoped<UserService>(provider =>
+            // Register BlobStorageService
+            builder.Services.AddSingleton<BlobStorageService>(provider =>
             {
-                var tableService = provider.GetRequiredService<TableService>();
-                return new UserService(tableService);
+                var configuration = provider.GetRequiredService<IConfiguration>();
+                var connectionString = configuration.GetConnectionString("AzureBlobStorageConnection"); // Fetch the blob connection string from appsettings.json
+                return new BlobStorageService(connectionString); // Pass the connection string to BlobStorageService
             });
 
+            // Build the application
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
-            if (!app.Environment.IsDevelopment())
+            // Configure middleware pipeline
+            if (app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
+                app.UseDeveloperExceptionPage(); // Show detailed errors in development
             }
             else
             {
-                app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler("/Home/Error"); // Global error handling page
+                app.UseHsts(); // Use HTTP Strict Transport Security in production
             }
 
-            app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseHttpsRedirection(); // Redirect HTTP to HTTPS
+            app.UseStaticFiles(); // Serve static files like CSS, JavaScript, images, etc.
 
-            app.UseRouting();
+            app.UseRouting(); // Enable routing middleware
+            app.UseAuthentication(); // Add authentication middleware for Identity
+            app.UseAuthorization(); // Add authorization middleware for securing resources
 
-            // Enable authentication and authorization
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            // Map default controller route
+            // Define default route for controllers
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");

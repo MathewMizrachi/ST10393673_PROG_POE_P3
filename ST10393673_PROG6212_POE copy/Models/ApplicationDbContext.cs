@@ -11,7 +11,6 @@ namespace ST10393673_PROG6212_POE.Models
         {
         }
 
-        // Add additional DbSets for your application data if needed
-        // public DbSet<YourEntity> YourEntities { get; set; }
+        public DbSet<ClaimViewModel> Claims { get; set; } // To store submitted claims
     }
 }

@@ -1,63 +1,85 @@
-﻿using Microsoft.Azure.Cosmos.Table;
+﻿using Azure.Data.Tables;
+using Microsoft.Extensions.Logging;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ST10393673_PROG6212_POE.Services
 {
     public class TableService
     {
-        private readonly CloudTableClient _tableClient;
+        private readonly string _connectionString;
+        private readonly TableServiceClient _tableServiceClient;
+        private readonly ILogger<TableService> _logger;
 
-        public TableService(string storageConnectionString)
+        // Constructor with ILogger for better error logging
+        public TableService(string connectionString, ILogger<TableService> logger)
         {
-            var storageAccount = CloudStorageAccount.Parse(storageConnectionString);
-            _tableClient = storageAccount.CreateCloudTableClient(new TableClientConfiguration());
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _tableServiceClient = new TableServiceClient(_connectionString);
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // Create a table if it doesn't already exist
-        public async Task<CloudTable> GetOrCreateTableAsync(string tableName)
-        {
-            var table = _tableClient.GetTableReference(tableName);
-            await table.CreateIfNotExistsAsync();
-            return table;
-        }
-
-        // Insert or update an entity in the table
-        public async Task<bool> InsertOrMergeEntityAsync<T>(CloudTable table, T entity) where T : TableEntity
+        // Retrieve or create a table
+        public async Task<TableClient> GetOrCreateTableAsync(string tableName, CancellationToken cancellationToken = default)
         {
             try
             {
-                var insertOrMergeOperation = TableOperation.InsertOrMerge(entity);
-                var result = await table.ExecuteAsync(insertOrMergeOperation);
-                return result.HttpStatusCode == 204;
+                var tableClient = _tableServiceClient.GetTableClient(tableName);
+                await tableClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
+                return tableClient;
             }
-            catch (StorageException e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error during InsertOrMerge operation: {e.Message}");
+                _logger.LogError(ex, $"Error creating or retrieving table: {tableName}");
+                return null;
+            }
+        }
+
+        // Insert or merge an entity in the table
+        public async Task<bool> InsertOrMergeEntityAsync<T>(TableClient tableClient, T entity, CancellationToken cancellationToken = default) where T : class, ITableEntity
+        {
+            try
+            {
+                // Upsert the entity, merging the existing one if it exists
+                await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Merge, cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inserting or merging entity.");
                 return false;
             }
         }
 
         // Retrieve an entity from the table
-        public async Task<T> RetrieveEntityAsync<T>(CloudTable table, string partitionKey, string rowKey) where T : TableEntity
-        {
-            var retrieveOperation = TableOperation.Retrieve<T>(partitionKey, rowKey);
-            var result = await table.ExecuteAsync(retrieveOperation);
-            return result.Result as T;
-        }
-
-        // Delete an entity from the table
-        public async Task<bool> DeleteEntityAsync<T>(CloudTable table, T entity) where T : TableEntity
+        public async Task<T> RetrieveEntityAsync<T>(TableClient tableClient, string partitionKey, string rowKey, CancellationToken cancellationToken = default) where T : class, ITableEntity
         {
             try
             {
-                var deleteOperation = TableOperation.Delete(entity);
-                var result = await table.ExecuteAsync(deleteOperation);
-                return result.HttpStatusCode == 204;
+                // Retrieve the entity from the table by partition and row key
+                var entity = await tableClient.GetEntityAsync<T>(partitionKey, rowKey, cancellationToken: cancellationToken);
+                return entity.Value;
             }
-            catch (StorageException e)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Error during Delete operation: {e.Message}");
+                _logger.LogError(ex, $"Error retrieving entity: PartitionKey={partitionKey}, RowKey={rowKey}");
+                return null;
+            }
+        }
+
+        // Delete an entity from the table
+        public async Task<bool> DeleteEntityAsync<T>(TableClient tableClient, T entity, CancellationToken cancellationToken = default) where T : class, ITableEntity
+        {
+            try
+            {
+                // Delete the entity from the table by partition and row key
+                await tableClient.DeleteEntityAsync(entity.PartitionKey, entity.RowKey, cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error deleting entity.");
                 return false;
             }
         }
