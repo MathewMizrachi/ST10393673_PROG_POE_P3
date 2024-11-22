@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;  // Add this to include logging
+using Microsoft.Extensions.Logging; // Add this to include logging
 using ST10393673_PROG6212_POE.Models;
 using ST10393673_PROG6212_POE.Services;
 
@@ -42,6 +42,10 @@ namespace ST10393673_PROG6212_POE
                 var configuration = provider.GetRequiredService<IConfiguration>();
                 var logger = provider.GetRequiredService<ILogger<TableService>>(); // Get the logger from DI container
                 var connectionString = configuration.GetConnectionString("AzureStorageConnection"); // Fetch connection string from appsettings.json under ConnectionStrings
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new ArgumentNullException("AzureStorageConnection", "The Azure Storage connection string is not configured.");
+                }
                 return new TableService(connectionString, logger); // Pass logger to the TableService constructor
             });
 
@@ -49,9 +53,17 @@ namespace ST10393673_PROG6212_POE
             builder.Services.AddSingleton<BlobStorageService>(provider =>
             {
                 var configuration = provider.GetRequiredService<IConfiguration>();
-                var connectionString = configuration.GetConnectionString("AzureBlobStorageConnection"); // Fetch the blob connection string from appsettings.json
-                return new BlobStorageService(connectionString); // Pass the connection string to BlobStorageService
+                var logger = provider.GetRequiredService<ILogger<BlobStorageService>>(); // Get the logger from DI container
+                var connectionString = configuration.GetValue<string>("AzureBlobStorage:ConnectionString"); // Fetch the blob connection string from appsettings.json
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new ArgumentNullException("AzureBlobStorageConnection", "The Blob Storage connection string is not configured.");
+                }
+                return new BlobStorageService(connectionString, logger); // Pass both connection string and logger to BlobStorageService
             });
+
+            // Register IClaimService and ClaimService (ensure this line exists)
+            builder.Services.AddSingleton<IClaimService, ClaimService>();
 
             // Build the application
             var app = builder.Build();
